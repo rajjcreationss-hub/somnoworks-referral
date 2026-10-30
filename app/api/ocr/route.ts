@@ -64,14 +64,34 @@ export async function POST(request: NextRequest) {
 
     const content = response.choices[0]?.message?.content || ''
 
+    // Strip markdown code blocks if present
+    const cleaned = content
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
+
     let extracted
     try {
-      extracted = JSON.parse(content)
+      extracted = JSON.parse(cleaned)
     } catch {
-      return NextResponse.json(
-        { error: 'Failed to parse AI response', raw: content },
-        { status: 422 }
-      )
+      // Try to extract JSON object from the response
+      const match = cleaned.match(/\{[\s\S]*\}/)
+      if (match) {
+        try {
+          extracted = JSON.parse(match[0])
+        } catch {
+          return NextResponse.json(
+            { error: 'Failed to parse AI response', raw: content },
+            { status: 422 }
+          )
+        }
+      } else {
+        return NextResponse.json(
+          { error: 'Failed to parse AI response', raw: content },
+          { status: 422 }
+        )
+      }
     }
 
     return NextResponse.json({ data: extracted })
