@@ -41,7 +41,8 @@ export default function OCRUpload({ physician, onComplete }: Props) {
       const json = await res.json()
 
       if (!res.ok) {
-        setError(json.error || 'Failed to extract patient data')
+        const msg = json.raw ? `${json.error}: ${json.raw.slice(0, 200)}` : (json.error || 'Failed to extract patient data')
+        setError(msg)
         return
       }
 
