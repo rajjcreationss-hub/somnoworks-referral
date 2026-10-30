@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 
 export const maxDuration = 60
 
-const EXTRACTION_PROMPT = `You are extracting patient demographic data from an EMR (Electronic Medical Records) screen photo.
+const EXTRACTION_PROMPT = `You are extracting patient demographic data from an EMR (Electronic Medical Records) screen photo. The photo may have screen glare, moiré patterns, or slight blur — do your best to read through these artifacts.
 
 Extract the following fields exactly as they appear. If a field is not visible or unclear, return an empty string for that field.
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
               type: 'image_url',
               image_url: {
                 url: `data:${mimeType};base64,${base64}`,
-                detail: 'high',
+                detail: 'auto',
               },
             },
           ],
