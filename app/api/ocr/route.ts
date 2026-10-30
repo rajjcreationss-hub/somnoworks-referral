@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+export const maxDuration = 60
+
 const EXTRACTION_PROMPT = `You are extracting patient demographic data from an EMR (Electronic Medical Records) screen photo.
 
 Extract the following fields exactly as they appear. If a field is not visible or unclear, return an empty string for that field.
