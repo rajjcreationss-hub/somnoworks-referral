@@ -41,8 +41,7 @@ export default function OCRUpload({ physician, onComplete }: Props) {
       const json = await res.json()
 
       if (!res.ok) {
-        const msg = json.raw ? `${json.error}: ${json.raw.slice(0, 200)}` : (json.error || 'Failed to extract patient data')
-        setError(msg)
+        setError(json.error || 'Failed to extract patient data')
         return
       }
 
@@ -159,11 +158,13 @@ export default function OCRUpload({ physician, onComplete }: Props) {
         </div>
       )}
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-        <p className="text-xs text-amber-700">
-          <strong>Tip:</strong> Make sure the entire patient demographics section is visible and in focus.
-          Good lighting and a steady hand improve extraction accuracy.
-        </p>
+      <div className="bg-red-50 border-2 border-red-400 rounded-lg px-4 py-3">
+        <p className="text-sm font-bold text-red-700 mb-2">Photo Instructions:</p>
+        <ol className="text-sm text-red-700 space-y-1 list-decimal list-inside">
+          <li>Keep phone <strong>12–15 inches</strong> away from the screen</li>
+          <li>Hold phone <strong>straight and steady</strong> (not at an angle)</li>
+          <li>Make sure <strong>all demographics are visible</strong> in the frame</li>
+        </ol>
       </div>
     </div>
   )

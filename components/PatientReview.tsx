@@ -103,7 +103,7 @@ export default function PatientReview({
           <Field label="First Name" name="first_name" placeholder="John" />
         </div>
 
-        <Field label="Date of Birth" name="dob" type="date" />
+        <Field label="Date of Birth" name="dob" type="text" placeholder="MM/DD/YYYY" />
 
         <Field label="Street Address" name="address" placeholder="123 Main St" />
 
