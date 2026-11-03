@@ -5,14 +5,18 @@ import PhysicianLookup from '@/components/PhysicianLookup'
 import PhysicianSetup from '@/components/PhysicianSetup'
 import OCRUpload from '@/components/OCRUpload'
 import PatientReview from '@/components/PatientReview'
-import { Physician, PatientData } from '@/lib/types'
+import ServiceSelection from '@/components/ServiceSelection'
+import SubmissionConfirm from '@/components/SubmissionConfirm'
+import { Physician, PatientData, ServiceType, ReferralSubmission } from '@/lib/types'
 
-type Step = 'lookup' | 'setup' | 'ocr' | 'review'
+type Step = 'lookup' | 'setup' | 'ocr' | 'review' | 'service' | 'confirm'
 
 export default function HomePage() {
   const [step, setStep] = useState<Step>('lookup')
   const [physician, setPhysician] = useState<Physician | null>(null)
   const [patientData, setPatientData] = useState<PatientData | null>(null)
+  const [submission, setSubmission] = useState<ReferralSubmission | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const handlePhysicianFound = (p: Physician) => {
     setPhysician(p)
@@ -33,9 +37,36 @@ export default function HomePage() {
     setStep('review')
   }
 
-  const handleReviewBack = () => {
+  const handleServiceSelect = async (service: ServiceType, symptoms: string[], notes: string) => {
+    if (!physician || !patientData) return
+
+    const sub: ReferralSubmission = { physician, patient: patientData, service, symptoms, notes }
+
+    setSubmitting(true)
+    try {
+      await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub),
+      })
+    } catch {
+      // still show confirm even if submission fails (silent fail)
+    } finally {
+      setSubmitting(false)
+    }
+
+    setSubmission(sub)
+    setStep('confirm')
+  }
+
+  const handleNewReferral = () => {
+    setPatientData(null)
+    setSubmission(null)
     setStep('ocr')
   }
+
+  const progressSteps: Step[] = ['lookup', 'ocr', 'review', 'service', 'confirm']
+  const currentIndex = progressSteps.indexOf(step === 'setup' ? 'lookup' : step)
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -43,36 +74,22 @@ export default function HomePage() {
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SW</span>
-            </div>
-            <div>
-              <h1 className="text-base font-semibold text-gray-900">SomnoWorks / CardioWorx</h1>
-              <p className="text-xs text-gray-500">Physician Referral Portal</p>
-            </div>
+            <img src="/somnoworks-logo.jpg" alt="SomnoWorks" className="h-10 object-contain" />
+            <p className="text-xs text-gray-500">Physician Referral Portal</p>
           </div>
         </div>
       </div>
 
-      {/* Step indicator */}
+      {/* Progress bar */}
       <div className="bg-white border-b border-gray-100 px-4 py-2">
         <div className="max-w-lg mx-auto flex gap-1">
-          {(['lookup', 'ocr', 'review'] as const).map((s, i) => (
-            <div key={s} className="flex items-center gap-1 flex-1">
-              <div
-                className={`h-1 flex-1 rounded-full ${
-                  step === 'setup'
-                    ? i === 0 ? 'bg-blue-600' : 'bg-gray-200'
-                    : ['lookup', 'setup'].includes(step) && i === 0
-                    ? 'bg-blue-600'
-                    : step === 'ocr' && i <= 1
-                    ? 'bg-blue-600'
-                    : step === 'review' && i <= 2
-                    ? 'bg-blue-600'
-                    : 'bg-gray-200'
-                }`}
-              />
-            </div>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                i <= currentIndex ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            />
           ))}
         </div>
       </div>
@@ -102,12 +119,30 @@ export default function HomePage() {
             physician={physician}
             patientData={patientData}
             onPatientDataChange={setPatientData}
-            onBack={handleReviewBack}
-            onProceed={() => {
-              // Milestone 2: service selection
-              alert('Milestone 2 — service selection coming soon')
-            }}
+            onBack={() => setStep('ocr')}
+            onProceed={() => setStep('service')}
           />
+        )}
+        {step === 'service' && physician && (
+          <ServiceSelection
+            onSelect={handleServiceSelect}
+            onBack={() => setStep('review')}
+          />
+        )}
+        {step === 'confirm' && submission && (
+          <SubmissionConfirm
+            submission={submission}
+            onNewReferral={handleNewReferral}
+          />
+        )}
+
+        {submitting && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 flex items-center gap-3 shadow-xl">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm font-medium text-gray-700">Submitting referral...</span>
+            </div>
+          </div>
         )}
       </div>
     </main>

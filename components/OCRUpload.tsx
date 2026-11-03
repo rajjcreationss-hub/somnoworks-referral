@@ -3,6 +3,12 @@
 import { useState, useRef, useCallback } from 'react'
 import { Physician, PatientData } from '@/lib/types'
 
+function toSlug(p: Physician) {
+  const first = p.first_name.toLowerCase().replace(/\s+/g, '-')
+  const last = p.last_name.toLowerCase().replace(/\s+/g, '-')
+  return `dr-${first}-${last}`
+}
+
 type Props = {
   physician: Physician
   onComplete: (data: PatientData) => void
@@ -13,7 +19,19 @@ export default function OCRUpload({ physician, onComplete }: Props) {
   const [error, setError] = useState('')
   const [preview, setPreview] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const personalLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/?doc=${toSlug(physician)}`
+    : ''
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(personalLink).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    })
+  }
 
   const processImage = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -165,6 +183,23 @@ export default function OCRUpload({ physician, onComplete }: Props) {
           <li>Hold phone <strong>straight and steady</strong> (not at an angle)</li>
           <li>Make sure <strong>all demographics are visible</strong> in the frame</li>
         </ol>
+      </div>
+
+      {/* Personal link */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        <p className="text-xs font-medium text-gray-500 mb-1">Your personal referral link</p>
+        <p className="text-xs text-gray-400 mb-2">Bookmark this — it will open the portal pre-loaded with your profile.</p>
+        <div className="flex items-center gap-2">
+          <code className="text-xs text-gray-700 bg-white border border-gray-200 rounded px-2 py-1 flex-1 truncate">
+            {personalLink}
+          </code>
+          <button
+            onClick={copyLink}
+            className="text-xs text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap"
+          >
+            {linkCopied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
       </div>
     </div>
   )

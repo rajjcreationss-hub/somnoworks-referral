@@ -9,10 +9,35 @@ function getSupabase() {
 }
 
 // GET /api/physician?name=John+Smith — search by name
+// GET /api/physician?slug=dr-john-smith — look up by URL slug
 export async function GET(request: NextRequest) {
   const supabase = getSupabase()
   const { searchParams } = new URL(request.url)
   const name = searchParams.get('name')
+  const slug = searchParams.get('slug')
+
+  // Slug lookup: ?doc=dr-john-smith → match first_name + last_name
+  if (slug) {
+    // slug format: dr-{first}-{last} or {first}-{last}
+    const parts = slug.replace(/^dr-/i, '').split('-')
+    if (parts.length >= 2) {
+      const firstName = parts[0]
+      const lastName = parts.slice(1).join('-')
+      const { data, error } = await supabase
+        .from('physicians')
+        .select('id, first_name, last_name, npi, practice_name, address, city, state, zip, phone, fax, email, signature_data')
+        .ilike('first_name', `%${firstName}%`)
+        .ilike('last_name', `%${lastName}%`)
+        .limit(1)
+        .single()
+
+      if (error || !data) {
+        return NextResponse.json({ physician: null })
+      }
+      return NextResponse.json({ physician: data })
+    }
+    return NextResponse.json({ physician: null })
+  }
 
   if (!name || name.length < 2) {
     return NextResponse.json({ physicians: [] })
@@ -20,7 +45,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('physicians')
-    .select('id, first_name, last_name, npi, practice_name, address, city, state, zip, phone, fax, email')
+    .select('id, first_name, last_name, npi, practice_name, address, city, state, zip, phone, fax, email, signature_data')
     .or(`last_name.ilike.%${name}%,first_name.ilike.%${name}%`)
     .limit(5)
 

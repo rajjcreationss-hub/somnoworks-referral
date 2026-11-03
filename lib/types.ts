@@ -42,3 +42,13 @@ export type Physician = {
   email: string
   signature_data: string | null
 }
+
+export type ServiceType = 'HST' | 'ECG_MCT'
+
+export type ReferralSubmission = {
+  physician: Physician
+  patient: PatientData
+  service: ServiceType
+  symptoms: string[]
+  notes: string
+}

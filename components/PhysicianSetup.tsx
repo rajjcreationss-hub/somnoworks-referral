@@ -44,6 +44,11 @@ export default function PhysicianSetup({ onComplete, onBack }: Props) {
         return
       }
 
+      // Save to localStorage
+      try {
+        localStorage.setItem('sw_physician', JSON.stringify(json.physician))
+      } catch {}
+
       onComplete(json.physician)
     } catch {
       setError('Network error. Please try again.')
