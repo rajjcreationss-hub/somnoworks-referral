@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
           Authorization: `Bearer ${resendKey}`,
         },
         body: JSON.stringify({
-          from: 'referrals@somnoworksmed.com',
+          from: 'onboarding@resend.dev',
           to: 'jshames@sleepworksmed.com',
           subject: `New ${serviceLabel} Referral — ${patient.first_name} ${patient.last_name}`,
           html: emailHtml,
