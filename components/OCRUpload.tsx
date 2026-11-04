@@ -33,6 +33,30 @@ export default function OCRUpload({ physician, onComplete }: Props) {
     })
   }
 
+  const compressImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        const MAX = 1200
+        let w = img.width
+        let h = img.height
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+          else { w = Math.round(w * MAX / h); h = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+        canvas.toBlob((blob) => resolve(blob || file), 'image/jpeg', 0.85)
+      }
+      img.onerror = () => resolve(file)
+      img.src = url
+    })
+  }
+
   const processImage = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       setError('Please upload an image file (JPG, PNG, HEIC, etc.)')
@@ -48,8 +72,10 @@ export default function OCRUpload({ physician, onComplete }: Props) {
     setError('')
 
     try {
+      // Compress before upload to stay under Vercel timeout
+      const compressed = await compressImage(file)
       const formData = new FormData()
-      formData.append('image', file)
+      formData.append('image', compressed, 'emr.jpg')
 
       const res = await fetch('/api/ocr', {
         method: 'POST',
