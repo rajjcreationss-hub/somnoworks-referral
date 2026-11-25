@@ -15,7 +15,9 @@ function getSupabaseServer() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[submit] Request received')
     const body = await request.json() as ReferralSubmission
+    console.log('[submit] Parsed body, generating PDF...')
     const { physician, patient, service, symptoms, notes } = body
 
     const serviceLabel = service === 'HST' ? 'Home Sleep Test (HST)' : 'ECG / MCT Monitoring'
@@ -200,6 +202,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, referralId, faxStatus })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[submit] ERROR:', message, error)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

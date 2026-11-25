@@ -44,13 +44,21 @@ export default function HomePage() {
 
     setSubmitting(true)
     try {
-      await fetch('/api/submit', {
+      const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sub),
       })
-    } catch {
-      // still show confirm even if submission fails (silent fail)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }))
+        alert(`Submission error: ${err.error}`)
+        setSubmitting(false)
+        return
+      }
+    } catch (e) {
+      alert(`Network error: ${e instanceof Error ? e.message : 'Unknown'}`)
+      setSubmitting(false)
+      return
     } finally {
       setSubmitting(false)
     }
