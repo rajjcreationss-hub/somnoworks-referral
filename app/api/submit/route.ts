@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     const { data: referralRow, error: dbError } = await supabase
       .from('referrals')
       .insert({
+        physician_id: physician.id || null,
         physician_name: `Dr. ${physician.first_name} ${physician.last_name}`,
         physician_npi: physician.npi,
         physician_practice: physician.practice_name,
@@ -58,7 +59,10 @@ export async function POST(request: NextRequest) {
       .select('id')
       .single()
 
-    if (!dbError && referralRow) {
+    if (dbError) {
+      console.error('[submit] Supabase insert error:', dbError)
+    }
+    if (referralRow) {
       referralId = referralRow.id
     }
 
@@ -199,7 +203,7 @@ export async function POST(request: NextRequest) {
       }).catch(() => {}) // non-fatal
     }
 
-    return NextResponse.json({ success: true, referralId, faxStatus })
+    return NextResponse.json({ success: true, referralId, faxStatus, dbError: dbError?.message || null })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     console.error('[submit] ERROR:', message, error)

@@ -49,11 +49,14 @@ export default function HomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sub),
       })
+      const json = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }))
-        alert(`Submission error: ${err.error}`)
+        alert(`Submission error: ${json.error || 'Unknown'}`)
         setSubmitting(false)
         return
+      }
+      if (json.dbError) {
+        alert(`DB warning: ${json.dbError}`)
       }
     } catch (e) {
       alert(`Network error: ${e instanceof Error ? e.message : 'Unknown'}`)
