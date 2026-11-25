@@ -12,15 +12,18 @@
     "@supabase/supabase-js": "^2.118.0",
     "next": "16.4.2",
     "openai": "^7.42.0",
+    "pdfkit": "^0.21.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.90.0",
+    "resend": "^6.39.0",
     "signature_pad": "^5.1.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.17.7",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
