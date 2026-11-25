@@ -41,8 +41,18 @@ const STATUS_COLORS: Record<string, string> = {
 
 const ADMIN_PASSWORD = 'somno2026'
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false)
+  const [authed, setAuthed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('admin_authed') === '1'
+    }
+    return false
+  })
   const [password, setPassword] = useState('')
   const [referrals, setReferrals] = useState<Referral[]>([])
   const [loading, setLoading] = useState(false)
@@ -51,11 +61,6 @@ export default function AdminPage() {
   const [serviceFilter, setServiceFilter] = useState('all')
   const [selected, setSelected] = useState<Referral | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
 
   const fetchReferrals = useCallback(async () => {
     setLoading(true)
@@ -66,7 +71,7 @@ export default function AdminPage() {
 
     if (!error && data) setReferrals(data as Referral[])
     setLoading(false)
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     if (authed) fetchReferrals()
@@ -75,6 +80,7 @@ export default function AdminPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     if (password === ADMIN_PASSWORD) {
+      sessionStorage.setItem('admin_authed', '1')
       setAuthed(true)
     } else {
       alert('Incorrect password')
