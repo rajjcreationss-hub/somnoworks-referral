@@ -39,7 +39,7 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-800',
 }
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'somnoworks2024'
+const ADMIN_PASSWORD = 'somno2026'
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
