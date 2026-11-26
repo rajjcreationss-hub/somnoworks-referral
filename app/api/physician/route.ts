@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('physicians')
-    .select('id, first_name, last_name, npi, practice_name, address, city, state, zip, phone, fax, email, signature_data')
-    .or(`last_name.ilike.%${name}%,first_name.ilike.%${name}%`)
-    .limit(5)
+    .select('id, first_name, last_name, npi, practice_name, address, city, state, zip, phone, fax, email, signature_data, referring_group')
+    .or(`last_name.ilike.%${name}%,first_name.ilike.%${name}%,referring_group.ilike.%${name}%`)
+    .limit(10)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

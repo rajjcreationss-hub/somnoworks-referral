@@ -152,6 +152,11 @@ export default function PhysicianLookup({ onFound, onNew }: Props) {
                 <div className="text-xs text-gray-500 mt-0.5">
                   {p.practice_name} &mdash; NPI: {p.npi}
                 </div>
+                {(p as Physician & { referring_group?: string }).referring_group && (
+                  <div className="text-xs text-blue-600 mt-0.5">
+                    Group: {(p as Physician & { referring_group?: string }).referring_group}
+                  </div>
+                )}
               </button>
             ))}
           </div>
